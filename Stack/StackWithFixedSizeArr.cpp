@@ -2,8 +2,6 @@
 
 #define MAX_STACK_SIZE 100
 
-using namespace std;
-
 template <typename T>
 class Stack{
 private:	
