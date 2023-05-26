@@ -2,8 +2,6 @@
 
 #define INFINITY 2000000000
 
-using namespace std;
-
 template <typename T>
 class Stack{
 private:	
