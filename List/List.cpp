@@ -1,4 +1,4 @@
-#include <limits>
+#define INFINITY 2000000000 // 직접 매크로를 정의해서 쓰는 것보다. C++에서 공식적으로 정의해놓은 리미트를 쓰는 게 좋음 
 
 using namespace std;
 
@@ -26,17 +26,17 @@ public:
 		size = 0;
 	}
 	
-	T Insert(int idx, T data){
+	int Insert(int idx, T data){
 		if (idx > size - 1){
-			int shortageCnt = idx - size;
+			int shortageCnt = idx - size;		
 			
 			while (shortageCnt--){
-				InsertLast(0); // T 형에 맞게 바꿔야 함 
+				InsertLast(0); // 타입에 따라 다른 기본값을 가질 필요가 있음 
 			}
 		}
 		
 		if (idx < 0)
-			return numeric_limits<T>::max();
+			return INFINITY;
 	
 		Node<T>* newNode = new Node<T>;
 		newNode->data = data;
@@ -46,6 +46,8 @@ public:
 			head = newNode;
 			
 			size++;
+			
+			return 1;
 		}
 	
 		Node<T>* tmp = head;
@@ -60,6 +62,8 @@ public:
 		tmp->link = newNode;
 		
 		size++;
+		
+		return 1;
 	}
 	
 	void InsertFirst(T data){
@@ -94,9 +98,9 @@ public:
 		size++;
 	}
 	
-	T Delete(int idx){
+	int Delete(int idx){
 		if (IsEmpty() == true)
-			return numeric_limits<T>::max();
+			return INFINITY;
 	
 		if (idx == 0){
 			Node<T>* removed = head;
@@ -136,7 +140,7 @@ public:
 	}
 	
 	T& operator[](int idx){		
-		infinity = numeric_limits<T>::max();
+		infinity = INFINITY;
 	
 		if (idx > size - 1)
 			return infinity;
