@@ -214,6 +214,10 @@ public:
 		PlusOneToSize();
 	}
 
+	T& operator[](int idx) {
+		return GetNode(idx)->data;
+	}
+
 	T Delete(int idx) {
 		if (IsIdxValid(idx) == false)
 			return ErrorValue<T>::Get();
