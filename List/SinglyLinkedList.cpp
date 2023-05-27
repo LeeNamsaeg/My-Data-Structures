@@ -47,6 +47,8 @@ private:
 			return ErrorValue<T>::Get();
 
 		head = link;
+
+		return DefaultValue<T>::Get();
 	}
 
 	inline Node<T>* GetHead() {
@@ -102,6 +104,8 @@ private:
 
 		node->link = GetHead();
 		SetHead(node);
+
+		return DefaultValue<T>::Get();
 	}
 
 	T ConnectNodeToNode(Node<T>* node1, Node<T>* node2) {
@@ -110,6 +114,8 @@ private:
 
 		node2->link = node1->link;
 		node1->link = node2;
+
+		return DefaultValue<T>::Get();
 	}
 
 	void FillInInsufficientSpace(int insufficientSpaceSize) {
@@ -126,6 +132,8 @@ private:
 		SetHead(GetHead()->link);
 
 		delete removed;
+
+		return DefaultValue<T>::Get();
 	}
 
 	T RemoveNodeFromNode(Node<T>* prevNode) {
@@ -136,6 +144,8 @@ private:
 		prevNode->link = prevNode->link->link;
 
 		delete removed;
+
+		return DefaultValue<T>::Get();
 	}
 
 	inline bool IsIdxValid(int idx) {
