@@ -1,183 +1,249 @@
-#define INFINITY 2000000000 // 직접 매크로를 정의해서 쓰는 것보다. C++에서 공식적으로 정의해놓은 리미트를 쓰는 게 좋음 
+#include <limits>
+#include <initializer_list>
 
 using namespace std;
 
 template <typename T>
-class Node{
+class ErrorValue {
+public:
+	static T Get() {
+		return numeric_limits<T>::max();
+	}
+
+	static int GetInt() {
+		return numeric_limits<int>::max();
+	}
+};
+
+template<typename T>
+class DefaultValue {
+public:
+	static T Get() {
+		return T();
+	}
+
+	static int GetInt() {
+		return int();
+	}
+};
+
+template <typename T>
+class Node {
 public:
 	T data;
-	
+
 	Node* link;
 };
 
 template <typename T>
-class List{
+class List {
 private:
 	Node<T>* head;
-	
+
 	int size;
-	
-	T infinity;
-	
-public:
-	List(){
-		head = NULL;
-		
-		size = 0;
+
+	T SetHead(Node<T>* link) {
+		if (head == link)
+			return ErrorValue<T>::Get();
+
+		head = link;
 	}
-	
-	int Insert(int idx, T data){
-		if (idx > size - 1){
-			int shortageCnt = idx - size;		
-			
-			while (shortageCnt--){
-				InsertLast(0); // 타입에 따라 다른 기본값을 가질 필요가 있음 
-			}
-		}
-		
-		if (idx < 0)
-			return INFINITY;
-	
+
+	inline Node<T>* GetHead() {
+		return head;
+	}
+
+	int SetSize(int size) {
+		if (size < 0)
+			return ErrorValue<T>::GetInt();
+
+		this->size = size;
+
+		return this->size;
+	}
+
+	int PlusOneToSize() {
+		size++;
+
+		return size;
+	}
+
+	int SubtractOneFromTheSize() {
+		if (size <= 0)
+			return ErrorValue<T>::GetInt();
+
+		size--;
+
+		return size;
+	}
+
+	Node<T>* CreateNewNode(T data = DefaultValue<T>::Get()) {
 		Node<T>* newNode = new Node<T>;
 		newNode->data = data;
-	
-		if (head == NULL){
-			newNode->link = head;
-			head = newNode;
-			
-			size++;
-			
-			return 1;
-		}
-	
-		Node<T>* tmp = head;
-		while (--idx){
+
+		return newNode;
+	}
+
+	Node<T>* GetNode(int idx) {
+		Node<T>* tmp = GetHead();
+		while (idx--) {
 			if (tmp->link == NULL)
 				break;
-			
-			tmp = tmp->link;
-		}
-	
-		newNode->link = tmp->link;
-		tmp->link = newNode;
-		
-		size++;
-		
-		return 1;
-	}
-	
-	void InsertFirst(T data){
-		Node<T>* newNode = new Node<T>;
-		newNode->data = data;
-	
-		newNode->link = head;
-		head = newNode;
-		
-		size++;
-	}
-	
-	void InsertLast(T data){	
-		Node<T>* newNode = new Node<T>;
-		newNode->data = data;
-	
-		if (head == NULL){
-			newNode->link = head;
-			head = newNode;
-			
-			size++;
-		
-			return;
-		}
-	
-		Node<T>* tmp = head;
-		for (; tmp->link != NULL; tmp = tmp->link) {}
-	
-		newNode->link = tmp->link;
-		tmp->link = newNode;
-		
-		size++;
-	}
-	
-	int Delete(int idx){
-		if (IsEmpty() == true)
-			return INFINITY;
-	
-		if (idx == 0){
-			Node<T>* removed = head;
-			head = head->link;
-		
-			delete removed;
-			
-			size--;
-		
-			return 1;
-		}
-	
-		Node<T>* tmp = head;
-		while (--idx){
-			if (tmp->link == NULL)
-				break;
-			
+
 			tmp = tmp->link;
 		}
 
-		Node<T>* removed = tmp->link;
-		tmp->link = tmp->link->link;
-	
+		return tmp;
+	}
+
+	T ConnectNodetoHead(Node<T>* node) {
+		if (node == NULL)
+			return ErrorValue<T>::Get();
+
+		node->link = GetHead();
+		SetHead(node);
+	}
+
+	T ConnectNodeToNode(Node<T>* node1, Node<T>* node2) {
+		if (node1 == NULL || node2 == NULL)
+			return ErrorValue<T>::Get();
+
+		node2->link = node1->link;
+		node1->link = node2;
+	}
+
+	void FillInInsufficientSpace(int insufficientSpaceSize) {
+		while (insufficientSpaceSize--) {
+			InsertLast(DefaultValue<T>::Get());
+		}
+	}
+
+	T RemoveNodeFromHead() {
+		if (GetHead() == NULL)
+			return ErrorValue<T>::Get();
+
+		Node<T>* removed = GetHead();
+		SetHead(GetHead()->link);
+
 		delete removed;
-		
-		size--;
-		
-		return 1;
 	}
-	
-	void Clear(){
-		while (head != NULL){
-			Delete(0);
-		}
-		
-		size = 0;
+
+	T RemoveNodeFromNode(Node<T>* prevNode) {
+		if (prevNode == NULL)
+			return ErrorValue<T>::Get();
+
+		Node<T>* removed = prevNode->link;
+		prevNode->link = prevNode->link->link;
+
+		delete removed;
 	}
-	
-	T& operator[](int idx){		
-		infinity = INFINITY;
-	
-		if (idx > size - 1)
-			return infinity;
-		
-		if (idx < 0)
-			return infinity;
-			
-		if (IsEmpty() == true)
-			return infinity;
-			
-	
-		Node<T>* tmp = head;
-		while (idx--){
-			if (tmp->link == NULL)
-				break;
-			
-			tmp = tmp->link;
-		}
-	
-		return tmp->data;	
+
+	inline bool IsIdxValid(int idx) {
+		return (idx >= 0);
 	}
-	
-	bool IsEmpty(){
-		return (size == 0);
+
+public:
+	List() {
+		head = NULL;
+
+		SetSize(0);
 	}
-	
-	int GetLength(){
+
+	inline int GetSize() {
 		return size;
 	}
-	
-	void Print(){
+
+	inline bool IsEmpty() {
+		return (GetSize() == 0);
+	}
+
+	T Insert(int idx, T data) {
+		if (IsIdxValid(idx) == false)
+			return ErrorValue<T>::Get();
+
+		if (idx > GetSize() - 1) {
+			int insufficientSpaceSize = idx - GetSize();
+
+			FillInInsufficientSpace(insufficientSpaceSize);
+		}
+
+		Node<T>* newNode = CreateNewNode(data);
+
+		if (GetSize() == 0) {
+			ConnectNodetoHead(newNode);
+		}
+		else {
+			Node<T>* node = GetNode(idx);
+			ConnectNodeToNode(node, newNode);
+		}
+
+		PlusOneToSize();
+
+		return DefaultValue<T>::Get();
+	}
+
+	void InsertFirst(T data) {
+		Node<T>* newNode = CreateNewNode(data);
+
+		ConnectNodetoHead(newNode);
+
+		PlusOneToSize();
+	}
+
+	void InsertLast(T data) {
+		Node<T>* newNode = CreateNewNode(data);
+
+		if (GetSize() == 0) {
+			ConnectNodetoHead(newNode);
+		}
+		else {
+			Node<T>* node = GetNode(GetSize() - 1);
+			ConnectNodeToNode(node, newNode);
+		}
+
+		PlusOneToSize();
+	}
+
+	T Delete(int idx) {
+		if (IsIdxValid(idx) == false)
+			return ErrorValue<T>::Get();
+
+		if (IsEmpty() == true)
+			return ErrorValue<T>::Get();
+
+		if (idx == 0) {
+			RemoveNodeFromHead();
+		}
+		else {
+			Node<T>* prevNode = GetNode(idx - 1);
+			RemoveNodeFromNode(prevNode);
+		}
+
+		SubtractOneFromTheSize();
+
+		return DefaultValue<T>::Get();
+	}
+
+	void Clear() {
+		while (GetSize() != 0) {
+			Delete(0);
+		}
+	}
+
+	void Print() {
+		cout << '\n';
+
+		cout << "size: " << GetSize() << '\n';
+
 		cout << "head->";
-		
-		for (; head != NULL; head = head->link){
-			cout << head->data << "->";
+
+		Node<T>* tmp = GetHead();
+		for (; tmp != NULL; tmp = tmp->link) {
+			cout << tmp->data << "->";
 		}
 
 		cout << "NULL";
+
+		cout << '\n';
 	}
 };
